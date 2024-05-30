@@ -2,11 +2,11 @@
   const http = require('http');
   const fs = require('fs');
   const path = require('path');
+  const url = require('url');
   
 
 //   local packages || modules
   const auth = require('./auth');
-//   const data = require('./data.json');
 
 const port = 9000;
 
@@ -16,9 +16,7 @@ server.on('request', function(req, res) {
     // SIGN UP OR LOGIN VALIDATION
     if (req.method === 'POST' && req.url === '/') {
         
-        // req.on('data', auth);
-        // res.end('done');
-        // req.on('data', auth);
+        // req.on('data', auth)
         
         
         req.on('data', (data) => {
@@ -46,6 +44,10 @@ server.on('request', function(req, res) {
 
     // VIEW MEMORIES ENDPOINT
     if (req.method === 'GET' && req.url === '/memories') {
+
+        // const link = url.parse(req.url, true);
+        // console.log(link);
+        
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         let memory;
@@ -103,33 +105,8 @@ server.on('request', function(req, res) {
             message: 'memory published successfully',
         }))
     }
-
-    // GENERAL TEST
-    // if (req.method === 'GET' && req.url === '/') {
-    //     res.statusCode = 200;
-    //     res.setHeader('Content-Type', 'application/json');
-
-    //     res.end(JSON.stringify({
-    //         message: 'Hello there',
-    //     }))
-    // } else {
-    //     res.statusCode = 404;
-    //     res.end();
-    // }
+    
 })
-
-// const location = path.join(__dirname, 'data.json'); 
-
-// const writing = fs.writeFile(location, (err, data) => { 
-//     if (err) {
-//         console.log(err)
-//     };
-//     console.log(data);
-// })
-
-// const writeToFile = function() {
-
-// }
 
 /**generate id based on timestamp
  * concatenate today's date and time stamp
@@ -148,95 +125,36 @@ const generateUniqueIds = function() {
     
 }
 
-// const location = __dirname + '\\' + 'data.json';
-
-// const readFileContent = function(file) {
-//     let data = {}
-//     let newContent = 'hello there';
-
-//     // creating an object from input memory
-//     const post = {
-//         id: generateUniqueIds(),
-//         content: newContent,
-//     }
-
-//     // Reading the file 
-//     const content = fs.createReadStream(file);
-
-//     content.on('data', (chunks) => {
-//         data = chunks
-//         console.log(data.toString())
-//     })
-//     .on('end', () => {
-//         // changing json string to json object to perform js operations
-//         const content = JSON.parse(data.toString());
-//         const values = [
-//             ...content,
-//             post,
-//         ];
-//         console.log(values)
-
-//         // changing the json object to a json string
-//         const jsonData = JSON.stringify(values);
-//         console.log(jsonData);
-//     })
-
-//     /** OPTIONS
-//      * consider parsing it as a json object
-//      * then parsing it as a json string again
-//      */
-    
-//     // fs.readFile(file, 'utf-8', (err, data) => {
-//     //     if (err) {
-//     //         console.log(err);
-//     //         throw err;
-//     //     }
-
-//     //     console.log(data);
-
-//     //     // content = {
-//     //     //     data,
-//     //     // }
-
-//     //     // console.log(content);
-        
-//     // })
-
-//     // console.log(content);
-// }
-
-// const fileContent = function(file) {
-//     let data;
-//     const content = fs.createReadStream(file);
-//     content.on('data', (chunk) => {
-//         data = chunk;
-//     })
-//     .on('end', () => {
-//         const readData = data.toString();
-//         // console.log(readData);
-//         // final = readData; 
-//         return readData;
-//         console.log(readData)
-//         // res.end(JSON.stringify(readData))
-//     });
-//     // return final;
-// }
-
-// console.log(fileContent(location))
-
-// readFileContent(location);
-
-// Writing into the file
-// const writeIntoFile = function(filename, content) {
-
-//     const contents = fs.createWriteStream(filename, {flags: 'a'});
-//     contents.write(content);
-
-// }
-
-
 
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}...`)
 })
+
+const middlewares = function(middleware) {
+    let index = 0;
+    let size = middleware.length;
+
+    while (index < size) {
+
+    }
+};
+
+const isVerified = function(req, res, next) {
+    let incomingData = '';
+    req.on('data', (chunk) => {
+        incomingData = chunk;
+    })
+    .on('end', () => {
+        const data = JSON.parse(incomingData.toString())
+
+    })
+}
+
+// todos
+// have to return user_id when user is verified due to point 6 & 7
+// memory endpoint => GET || POST /api/:user_id/memories
+// before users can view or post they need to be authenticated
+// another middleware to check it the url params is admin
+
+// git remote add origin git@github.com:Jhay-Great/kodecamp.git

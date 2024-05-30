@@ -28,12 +28,15 @@ const validation = function(data) {
     const { username, password } = JSON.parse(reqData);
 
     if (username !== 'admin' || password !== 'password') {
-        res.statusCode = 401;
-        res.end(JSON.stringify( {
-            message: 'Authentication required'
-        }))
+        // res.statusCode = 401;
+        // res.end(JSON.stringify( {
+        //     message: 'Authentication required'
+        // }))
         
+        return 'Authentication required';
     }
+
+    return 'User verified';
     
 }
 
