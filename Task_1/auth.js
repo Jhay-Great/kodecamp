@@ -1,66 +1,31 @@
-// const http = require('http');
-
-// const server = http.createServer();
-
-// server.on('request', (req, res) => {
-//     if (req.method === 'POST' && req.url === '/') {
-//         req.on('data', (data) => {
-//             // res.statusCode = 200;
-//             // res.setHeader('Content-Type', 'appliction/json');
-//             console.log(data);
-//             const reqData = data.toString();
-//             const { username, password } = JSON.parse(reqData);
-
-//             if (username !== 'admin' || password !== 'password') {
-//                 res.statusCode = 401;
-//                 res.end(JSON.stringify( {
-//                     message: 'Authentication required'
-//                 }))
-//             }
-
-            
-//         })
-//     }
-// })
-
-const validation = function(data) {
-    const reqData = data.toString();
-    const { username, password } = JSON.parse(reqData);
-
-    if (username !== 'admin' || password !== 'password') {
-        // res.statusCode = 401;
-        // res.end(JSON.stringify( {
-        //     message: 'Authentication required'
-        // }))
-        
-        return 'Authentication required';
+const userAuthentication = function(req, res, next) {
+    // handling 
+    if (!req.headers.authorization) {
+        res.statusCode = 401;
+        res.setHeader('WWW-Authenticate', 'Basic');
+        return res.end(JSON.stringify({
+            message: 'Authentication required'
+        }))
+    }
+    
+    const auth = req.headers.authorization;
+    const [authScheme, base64] = auth.split(' ');
+    
+    // decoding basic authentication or handling authentication
+    // const encode = atob(base64);
+    const encode = Buffer.from(base64, 'base64').toString('utf-8');
+    const [username, password] = encode.split(':');
+    
+    // handling wrong authentications
+    if (authScheme !== 'Basic' || username !== 'admin' || password !== 'password') {
+        res.statusCode = 401;
+        return res.end(JSON.stringify({
+            message: 'Authentication required'
+        }))
     }
 
-    return 'User verified';
-    
+    next();
+
 }
 
-// const validation = function(req, res) {
-//     if (req.method === 'POST' && req.url === '/') {
-//         req.on('data', (data) => {
-            
-//             const reqData = data.toString();
-//             const { username, password } = JSON.parse(reqData);
-
-//             if (username !== 'admin' || password !== 'password') {
-//                 res.statusCode = 401;
-//                 res.end(JSON.stringify( {
-//                     message: 'Authentication required'
-//                 }))
-
-//                 return false;
-//             }
-
-            
-//         })
-//         return true;
-//     }
-// }
-
-module.exports = validation;
-
+module.exports = userAuthentication;

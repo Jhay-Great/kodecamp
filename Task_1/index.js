@@ -3,7 +3,9 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
+
+// local modules
+const userAuthentication = require('./auth');
 
 
 
@@ -18,25 +20,47 @@ server.listen(port, () => {
 server.on('request', (req, res) => {
 
     // MIDDLEWARE SHOULD BE HERE
+    const middleware = function(req, res, next) {
 
+    }
     
     
-    
+    // login route or authentication route
     if(req.method === 'POST' && req.url === '/') {
+        // decoding basic authentication or handling authentication
+        if (!req.headers.authorization) {
+            res.statusCode = 401;
+            res.setHeader('WWW-Authenticate', 'Basic');
+            // res.writeHead(401, {'WWW-Authenticate': 'Basic'})
+            return res.end(JSON.stringify({
+                message: 'Authentication required'
+            }))
+        }
+        
+        const auth = req.headers.authorization;
+        const [authScheme, base64] = auth.split(' ');
+        
+        // const encode = atob(base64);
+        const encode = Buffer.from(base64, 'base64').toString('utf-8');
+        const [username, password] = encode.split(':');
+        console.log({username, password});
+        
+        if (authScheme !== 'Basic' || username !== 'admin' || password !== 'password') {
+            res.statusCode = 401;
+            return res.end(JSON.stringify({
+                message: 'Authentication required'
+            }))
+        }
+
         let data = '';
         req.on('data', (chunk) => {
             data = chunk;
         }).on('end', () => {
             const reqData = JSON.parse(data.toString());
             const {username, password} = reqData;
-            if (username !== 'admin' || password !== 'password') {
-                res.statusCode = 401;
-                return res.end(JSON.stringify({
-                    message: 'Authentication required'
-                }))
-            }
-            const authKey = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
-            res.setHeader('Authorization', authKey);
+
+            // const authKey = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+            // res.setHeader('Authorization', authKey);
             return res.end(JSON.stringify({
                 message: 'User authenticated'
             }));
@@ -44,7 +68,7 @@ server.on('request', (req, res) => {
     }
 
     // sign up
-    if(req.method === 'POST' && req.url === '/signup') {
+    else if(req.method === 'POST' && req.url === '/signup') {
         let data = '';
         req.on('data', (chunk) => {
             data = chunk;
@@ -306,4 +330,44 @@ const generateUniqueIds = function() {
 
     return Number(`${day}${month}${year}${timestamp}`)
     
+}
+
+const checkUserAuthentication = function(req, res, next) {
+    // handling 
+    if (!req.headers.authorization) {
+        res.statusCode = 401;
+        res.setHeader('WWW-Authenticate', 'Basic');
+        return res.end(JSON.stringify({
+            message: 'Authentication required'
+        }))
+    }
+    
+    const auth = req.headers.authorization;
+    const [authScheme, base64] = auth.split(' ');
+    
+    // decoding basic authentication or handling authentication
+    // const encode = atob(base64);
+    const encode = Buffer.from(base64, 'base64').toString('utf-8');
+    const [username, password] = encode.split(':');
+    
+    // handling wrong authentications
+    if (authScheme !== 'Basic' || username !== 'admin' || password !== 'password') {
+        res.statusCode = 401;
+        return res.end(JSON.stringify({
+            message: 'Authentication required'
+        }))
+    }
+
+    next();
+
+}
+
+const middleware = function(req, res) {
+    const next = function() {
+
+    }
+}
+
+const next = function() {
+
 }
