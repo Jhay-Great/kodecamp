@@ -24,7 +24,7 @@ const userAuthentication = function(req, res, next) {
         }))
     }
 
-    next();
+    next(req, res);
 
 }
 

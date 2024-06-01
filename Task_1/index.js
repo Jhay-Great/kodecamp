@@ -20,11 +20,14 @@ server.listen(port, () => {
 server.on('request', (req, res) => {
 
     // MIDDLEWARE SHOULD BE HERE
-    const middleware = function(req, res, next) {
+    userAuthentication(req, res, routeRequestAndResponses);
 
-    }
     
     
+})
+
+// ROUTE RESPONSES
+const routeRequestAndResponses = function(req, res, next) {
     // login route or authentication route
     if(req.method === 'POST' && req.url === '/') {
         // decoding basic authentication or handling authentication
@@ -67,7 +70,8 @@ server.on('request', (req, res) => {
         })
     }
 
-    // sign up
+    // SIGN UP TO GET BASIC AUTH
+    // email address is not required
     else if(req.method === 'POST' && req.url === '/signup') {
         let data = '';
         req.on('data', (chunk) => {
@@ -75,7 +79,7 @@ server.on('request', (req, res) => {
         }).on('end', () => {
             const reqData = JSON.parse(data.toString());
             const {username, email, password} = reqData;
-            if (!username || !password || !email) {
+            if (!username || !password) {
                 res.statusCode = 400;
                 return res.end(JSON.stringify({
                     message: 'Incomplete registration'
@@ -84,15 +88,12 @@ server.on('request', (req, res) => {
             const authKey = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
             res.setHeader('Authorization', authKey);
             return res.end(JSON.stringify({
-                message: 'User authenticated'
+                message: 'User registered'
             }));
         })
     }
-    // GET MEMORIES
-    // const link = url.parse(req.url);
-    // console.log(link);
-
     
+    // VIEWING MEMORIES
     else if (req.method === 'GET' && req.url === '/memories') {
         // authentication check
         const key = req.headers.authorization;
@@ -120,6 +121,7 @@ server.on('request', (req, res) => {
             })
         })
     }
+
     // POST MEMORIES
     else if (req.method === 'POST' && req.url === '/memories') {
 
@@ -163,8 +165,8 @@ server.on('request', (req, res) => {
             message: 'Not Found'
         }))
     }
-})
 
+}
 
 
 
