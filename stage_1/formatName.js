@@ -4,4 +4,3 @@ const formatName = function(name) {
 
 };
 
-console.log(formatName('red victor'))

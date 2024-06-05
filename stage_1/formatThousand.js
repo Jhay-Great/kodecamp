@@ -19,4 +19,3 @@ const formatThousand = function(number) {
 
 
 
-console.log(formatThousand(10000));
