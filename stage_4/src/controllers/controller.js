@@ -53,16 +53,25 @@ const login = async (req, res) => {
 }
 
 const forgottenPassword = (req, res) => {
-    const { email } = req.body;
-    const response = generateUserToken(email);
-
-    // console.log(response);
-
-    res.status(201).json({
-        success: true,
-        message: `Reset link sent to your email`,
-        alt: `http://localhost:8080/stage4/reset-password?token=${response}` // for the sake of not using nodemail and an email to retrieve sent mails
-    })
+    try {
+        const { email } = req.body;
+        const response = generateUserToken(email); 
+    
+        // console.log(response);
+    
+        res.status(201).json({
+            success: true,
+            message: `Reset link sent to your email`,
+            alt: `http://localhost:8080/stage4/reset-password?token=${response}` // for the sake of not using nodemail and an email to retrieve sent mails
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: true,
+            message: 'Internal server error, kindly contact admin at www.kodeCamp.org'
+        })
+    }
 
 }
 
