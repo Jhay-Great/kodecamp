@@ -1,5 +1,5 @@
-const { userRegistration, verifyUserLogin, generateUserToken, authenticatePasswordVerification, changePassword } = require("../model/mode");
-const { jwtToken } = require("../utils/jwt");
+const { userRegistration, verifyUserLogin, generateUserToken, authenticatePasswordVerification, changePassword, userInfo } = require("../model/mode");
+const { jwtToken, verifyJwtToken } = require("../utils/jwt");
 
 
 const registration = async (req, res) => {
@@ -35,7 +35,6 @@ const login = async (req, res) => {
 
         // on success issue user token
         const {id} = response;
-        // console.log( response, id);
 
         const token = await jwtToken({email, id});
 
@@ -67,34 +66,58 @@ const forgottenPassword = (req, res) => {
 
 }
 
-const resetPassword = (req, res) => {
-    const {token} = req.query;
-    const response = authenticatePasswordVerification(token);
-    // console.log(response);
-
-    const { user } = response;
+const resetPassword = async (req, res) => {
+    try {
+        const {token} = req.query;
+        const response = authenticatePasswordVerification(token);
+        
+        const { user } = response;
+        if (user.length === 0) return res.status(404).json({
+            error: true,
+            message: `Page not found`,
+        })
     
-    if (user.length === 0) return res.status(404).json({
-        error: true,
-        message: `Page not found`,
-    })
-
-    const { newPassword } = req.body;
-    const resetPasswordResponse = changePassword(user, newPassword);
-    
-    
-    res.status(200).json({
-        success: true,
-        message: resetPasswordResponse,
-    })
+        // changing the password
+        const { newPassword } = req.body;
+        const resetPasswordResponse = await changePassword(user, newPassword);
+        
+        
+        res.status(200).json({
+            success: true,
+            message: resetPasswordResponse,
+        })
+        
+    } catch (error) {
+        return res.status(500).json({
+            error: true,
+            message: 'Internal server error, kindly contact admin at www.kodeCamp.org'
+        })
+    }
 
 }
 
-// consts
+const protected = async (req, res) => {
+    const data = req.headers['authorization'];
+    const token = data && data.split(' ')[1];
+
+    
+    const response = await verifyJwtToken(token);
+    const { email } = response;
+
+    const user = userInfo(email);
+    console.log(user);
+
+
+    res.status(200).json({
+        success: true,
+        message: user,
+    })
+}
 
 module.exports = {
     registration,
     login,
     forgottenPassword,
     resetPassword,
+    protected,
 }

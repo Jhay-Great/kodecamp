@@ -2,6 +2,7 @@
 const uuid = require('uuid');
 
 
+
 // local imports
 const { hashPassword, comparePassword } = require('../utils/bcrypt');
 
@@ -67,39 +68,41 @@ const authenticatePasswordVerification = (token) => {
     }
 }
 
-const changePassword = function (user, password) {
+const changePassword = async function (user, password) {
     const [{id: userId}] = user;
 
     const [userData] = database.filter(user => user.id === userId );
     
-
-    // const initialPassword = userData.password;
-    
     // this is where the change occurs
-    userData.password = hashPassword(password),
+    userData.password = await hashPassword(password);
 
-    // console.log('comparison: ', initialPassword, password);
-    
-    console.log('current user data: ', userData);
-    // console.log('current db: ', database);
+    // clearing the reset password db
+    resetDatabase.pop();
 
     return 'Password successfully reset'
+}
+
+const verifyToken = async function(token) {
+
+}
+
+const userInfo = function (email) {
+
+    const [ user ] = queryByEmail(email);
+    console.log(user);
+
+    const {name, email: userEmail} = user;
+
+    return {
+        name,
+        userEmail,
+    }
 }
 
 
 
 
 // HELPER FUNCTIONS
-// const queryByEmail = function (email) {
-//     const result = database.filter(user => {
-//         // console.log('user email: ', user.email, 'sent email: ', email);
-//         console.log(user.email === email);
-//         return user.email === email
-//     });
-//     console.log( result );
-//     return result;
-// }
-
 const queryByEmail = (email) => database.filter(user => user.email === email);
 
 const expiryTime = () => {
@@ -113,4 +116,6 @@ module.exports = {
     generateUserToken,
     authenticatePasswordVerification,
     changePassword,
+    verifyToken,
+    userInfo,
 }

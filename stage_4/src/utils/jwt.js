@@ -8,10 +8,18 @@ const jwtToken = async function (data) {
     return token;
 }
 
+const verifyJwtToken = async function (token) {
+    // jwt.compare(token);
+    const compare = await jwt.verify(token, process.env.SECRET_KEY);
+    
+    return compare;
+}
+
 
 
 module.exports = {
     jwtToken,
+    verifyJwtToken,
 }
 
 
