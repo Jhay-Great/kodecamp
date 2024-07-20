@@ -105,11 +105,8 @@ const verifyToken = async function(token) {
 }
 
 const userInfo = async function (email) {
-
-    // const [ user ] = queryByEmail(email);
-    
     const user = await findUserByEmail(email);
-    console.log(user);
+    // console.log(user);
 
     const {fullName, email: userEmail} = user;
 
