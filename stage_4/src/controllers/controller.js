@@ -4,9 +4,9 @@ const { jwtToken, verifyJwtToken } = require("../utils/jwt");
 
 const registration = async (req, res) => {
     try {
-        const { fullName: name, email, password } = req.body;
+        const { fullName, email, password } = req.body;
     
-        const response = await userRegistration({name, email, password});
+        const response = await userRegistration({fullName, email, password});
         
         
         res.status(201).json({
@@ -52,10 +52,10 @@ const login = async (req, res) => {
     }
 }
 
-const forgottenPassword = (req, res) => {
+const forgottenPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        const response = generateUserToken(email); 
+        const response = await generateUserToken(email); 
     
         // console.log(response);
     
@@ -78,13 +78,19 @@ const forgottenPassword = (req, res) => {
 const resetPassword = async (req, res) => {
     try {
         const {token} = req.query;
-        const response = authenticatePasswordVerification(token);
+        const response = await authenticatePasswordVerification(token);
+
+        console.log('response from model: ', response);
+        if (response === null) return res.status(404).json({
+            error: true,
+            message: 'Can not access this route' 
+        })
         
         const { user } = response;
-        if (user.length === 0) return res.status(404).json({
-            error: true,
-            message: `Page not found`,
-        })
+        // if (user.length === 0) return res.status(404).json({
+        //     error: true,
+        //     message: `Page not found`,
+        // })
     
         // changing the password
         const { newPassword } = req.body;
@@ -97,6 +103,7 @@ const resetPassword = async (req, res) => {
         })
         
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             error: true,
             message: 'Internal server error, kindly contact admin at www.kodeCamp.org'

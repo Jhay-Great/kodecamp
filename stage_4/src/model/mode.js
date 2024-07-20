@@ -1,5 +1,6 @@
 // imports
 const uuid = require('uuid');
+const { userModel: userDb, resetPasswordModel } = require('./dbSchema');
 
 
 
@@ -14,14 +15,17 @@ const database = [
 const resetDatabase = [];
 
 const userRegistration = async function (data) {
-    const {name, email, password} = data;
+    const {fullName, email, password} = data;
     const registeredUser = {
         id: uuid.v4(),
-        name,
+        fullName,
         email,
         password: await hashPassword(password),
     };
 
+    // const user = new user(registeredUser);
+    const response = await userDb.create(registeredUser);
+    console.log('response from remote db', response);
     database.push(registeredUser);
     
     return registeredUser;
@@ -29,13 +33,18 @@ const userRegistration = async function (data) {
 
 const verifyUserLogin = async function (data) {
     const {email, password} = data;
-    const [ user ] = queryByEmail(email);
+    // const [ user ] = queryByEmail(email);
+
+    // const user = await userDb.findOne({email});
+    const user = await findUserByEmail(email)
+    // console.log(user === null);
 
     // console.log(undefined === false);
 
-    if (typeof user === 'undefined') return user;
+    if (user === null) return user;
     
     const result = await comparePassword(password, user.password)
+    console.log(result);    
 
     if (!result) return result;
     
@@ -43,24 +52,35 @@ const verifyUserLogin = async function (data) {
 
 }
 
-const generateUserToken = function(email) {
-    const [user] = queryByEmail(email);
-    console.log(user);
+const generateUserToken = async function(email) {
+    // const [user] = queryByEmail(email);
+    const user = await findUserByEmail(email);
+    console.log(user, user.id);
 
     const { id } = user;
     const resetToken = uuid.v4();
     const userDetail = {
-        id,
-        resetToken,
+        userId: id,
+        token: resetToken,
     }
-    resetDatabase.push(userDetail);
+    // resetDatabase.push(userDetail);
+    const resetDB = await resetPasswordModel.create(userDetail);
+
+    console.log(resetDB);
 
     return resetToken;
 }
 
-const authenticatePasswordVerification = (token) => {
-    const user = resetDatabase.filter(user => user.resetToken === token);
+const authenticatePasswordVerification = async (token) => {
+    // const user = resetDatabase.filter(user => user.resetToken === token);
+
+    const user = await resetPasswordModel.findOne({token});
+
     // console.log(user);
+
+    if (user === null) return user;
+
+    // console.log('run')
 
     return {
         user,
@@ -69,15 +89,30 @@ const authenticatePasswordVerification = (token) => {
 }
 
 const changePassword = async function (user, password) {
-    const [{id: userId}] = user;
+    console.log('changed password was called...')
+    // const [{_id: userId}] = user;
+    const {userId} = user;
+    console.log('id: ', userId);
+    
 
-    const [userData] = database.filter(user => user.id === userId );
+    // const [userData] = database.filter(user => user.id === userId );
+    // const {_id} = user;
+
+    const userData = await userDb.findOne({id: userId})
+    console.log('found user in user db: ', userData);
     
     // this is where the change occurs
     userData.password = await hashPassword(password);
+    
 
     // clearing the reset password db
     resetDatabase.pop();
+    const found = await resetPasswordModel.findOne({userId});
+    // const foundUser = await userDb.findOne({userId});
+
+    // const deleted = await resetPasswordModel.deleteOne({userId});
+    // console.log(deleted);
+    console.log('found user in reset db: ', found);
 
     return 'Password successfully reset'
 }
@@ -104,6 +139,7 @@ const userInfo = function (email) {
 
 // HELPER FUNCTIONS
 const queryByEmail = (email) => database.filter(user => user.email === email);
+const findUserByEmail = async (email) => await userDb.findOne({email});
 
 const expiryTime = () => {
     const now = new Date();
