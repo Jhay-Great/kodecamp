@@ -36,7 +36,7 @@ const verifyUserLogin = async function (data) {
     // const [ user ] = queryByEmail(email);
 
     // const user = await userDb.findOne({email});
-    const user = await findUserByEmail(email)
+    const user = await findUserByEmail(email);
     // console.log(user === null);
 
     // console.log(undefined === false);
@@ -44,7 +44,6 @@ const verifyUserLogin = async function (data) {
     if (user === null) return user;
     
     const result = await comparePassword(password, user.password)
-    console.log(result);    
 
     if (!result) return result;
     
@@ -89,31 +88,15 @@ const authenticatePasswordVerification = async (token) => {
 }
 
 const changePassword = async function (user, password) {
-    console.log('changed password was called...')
-    // const [{_id: userId}] = user;
     const {userId} = user;
-    console.log('id: ', userId);
-    
+    const updatedPassword = await hashPassword(password);
 
-    // const [userData] = database.filter(user => user.id === userId );
-    // const {_id} = user;
-
-    const userData = await userDb.findOne({id: userId})
-    console.log('found user in user db: ', userData);
-    
     // this is where the change occurs
-    userData.password = await hashPassword(password);
-    
+    await userDb.findOneAndUpdate({id: userId}, {password: updatedPassword})
 
     // clearing the reset password db
-    resetDatabase.pop();
-    const found = await resetPasswordModel.findOne({userId});
-    // const foundUser = await userDb.findOne({userId});
-
-    // const deleted = await resetPasswordModel.deleteOne({userId});
-    // console.log(deleted);
-    console.log('found user in reset db: ', found);
-
+    await resetPasswordModel.deleteOne({userId});
+    
     return 'Password successfully reset'
 }
 
@@ -121,15 +104,17 @@ const verifyToken = async function(token) {
 
 }
 
-const userInfo = function (email) {
+const userInfo = async function (email) {
 
-    const [ user ] = queryByEmail(email);
+    // const [ user ] = queryByEmail(email);
+    
+    const user = await findUserByEmail(email);
     console.log(user);
 
-    const {name, email: userEmail} = user;
+    const {fullName, email: userEmail} = user;
 
     return {
-        name,
+        fullName,
         userEmail,
     }
 }
@@ -140,6 +125,7 @@ const userInfo = function (email) {
 // HELPER FUNCTIONS
 const queryByEmail = (email) => database.filter(user => user.email === email);
 const findUserByEmail = async (email) => await userDb.findOne({email});
+const findAndUpdateUserDetails = async (user, updateData) => await userDb.findOneAndUpdate(user, updateData, {new: true});
 
 const expiryTime = () => {
     const now = new Date();
@@ -154,4 +140,5 @@ module.exports = {
     changePassword,
     verifyToken,
     userInfo,
+    findAndUpdateUserDetails,
 }

@@ -1,4 +1,4 @@
-const { userRegistration, verifyUserLogin, generateUserToken, authenticatePasswordVerification, changePassword, userInfo } = require("../model/mode");
+const { userRegistration, verifyUserLogin, generateUserToken, authenticatePasswordVerification, changePassword, userInfo, findAndUpdateUserDetails } = require("../model/mode");
 const { jwtToken, verifyJwtToken } = require("../utils/jwt");
 
 
@@ -28,7 +28,9 @@ const login = async (req, res) => {
         const {email, password} = req.body;
         const response = await verifyUserLogin({email, password});
 
-        if (typeof response === 'undefined' || !response) return res.status(401).json({
+        // console.log('login controller: ', response);
+
+        if (typeof response === 'undefined' || !response) return res.status(404).json({
             error: true,
             message: 'User does not exist, kindly sign up',
         })
@@ -37,6 +39,7 @@ const login = async (req, res) => {
         const {id} = response;
 
         const token = await jwtToken({email, id});
+        const updatingUserDetails = await findAndUpdateUserDetails({id}, {protectedRouteToken: token});
 
         res.status(200).json({
             success: true,
@@ -120,9 +123,7 @@ const protected = async (req, res) => {
     const response = await verifyJwtToken(token);
     const { email } = response;
 
-    const user = userInfo(email);
-    console.log(user);
-
+    const user = await userInfo(email);
 
     res.status(200).json({
         success: true,
