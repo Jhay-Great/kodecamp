@@ -65,7 +65,8 @@ const forgottenPassword = async (req, res) => {
         res.status(201).json({
             success: true,
             message: `Reset link sent to your email`,
-            alt: `http://localhost:8080/stage4/reset-password?token=${response}` // for the sake of not using nodemail and an email to retrieve sent mails
+            // alt: `http://localhost:8080/stage4/reset-password?token=${response}` // for the sake of not using nodemail and an email to retrieve sent mails
+            alt: `https://kodecamp-stage4.onrender.com/stage4/reset-password?token=${response}` // for the sake of not using nodemail and an email to retrieve sent mails
         })
         
     } catch (error) {
