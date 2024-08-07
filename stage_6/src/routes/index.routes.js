@@ -8,6 +8,7 @@ const adminRoutes = require("./admin.routes");
 // middleware
 const { verifyUserLogin } = require("../middlewares/verifyUserLogin");
 const forgottenPassword = require("../middlewares/forgottenPassword");
+const {verifyUserPasswordToken} = require('../middlewares/verification');
 
 // controller
 const {
@@ -20,7 +21,7 @@ const {
 baseRoutes.post("/register", register);
 baseRoutes.post("/login", verifyUserLogin, login);
 baseRoutes.post("/forgotten-password", forgottenPassword);
-baseRoutes.post("/reset-password" ,resetPassword);
+baseRoutes.post("/reset-password", verifyUserPasswordToken ,resetPassword);
 
 // admin routes
 baseRoutes.use("/admin", adminRoutes);

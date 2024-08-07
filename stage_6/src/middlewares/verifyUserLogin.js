@@ -1,19 +1,28 @@
-const { database } = require('../model/user.model');
+const { findUserByEmail } = require('../utils/helpers');
+const { comparePassword } = require('../utils/bcrypt');
+
 
 const verifyUserLogin = async function (req, res, next) {
     const { email, password } = req.body;
 
-    const response = database.find(user => user.email === email && user.password === password);
-
+    const user = await findUserByEmail(email);
     
-    if (typeof response === 'undefined') return res.status(401).json({
+
+    if (user === null) return res.status(401).json({
         error: true,
         message: 'User does not exist',
-    }); 
+    }); ;
+    
+    const result = await comparePassword(password, user.password)
 
-    const { id, email: userEmail} = response;
-    req.user = {id, userEmail};
+    if (!result)  return res.status(401).json({
+        error: true,
+        message: 'User does not exist',
+    }); ;
+    
+    req.user = user;
     next();
+    
 }
 
 

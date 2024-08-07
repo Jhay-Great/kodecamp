@@ -1,4 +1,4 @@
-const { userRegistration } = require("../model/user.model");
+const { userRegistration, changePassword } = require("../model/user.model");
 const { verifyUserLogin } = require("../middlewares/verifyUserLogin");
 const { jwtToken } = require("../utils/jwt");
 
@@ -22,9 +22,9 @@ const register = async function (req, res) {
 
 const login = async function (req, res) {
   try {
-    const { id, userEmail: email } = req.user;
+    const { id, userEmail: email, admin} = req.user;
 
-    const token = await jwtToken({ email, id });
+    const token = await jwtToken({ email, id, admin });
     // const updatingUserDetails = await findAndUpdateUserDetails({id}, {protectedRouteToken: token});
 
     res.status(200).json({
@@ -44,17 +44,7 @@ const login = async function (req, res) {
 
 const resetPassword = async (req, res) => {
   try {
-    const { token } = req.query;
-    const response = await authenticatePasswordVerification(token);
-
-    console.log("response from model: ", response);
-    if (response === null)
-      return res.status(404).json({
-        error: true,
-        message: "Can not access this route",
-      });
-
-    const { user } = response;
+    const { user } = req;
 
     // changing the password
     const { newPassword } = req.body;
