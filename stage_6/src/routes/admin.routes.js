@@ -2,7 +2,7 @@ const express = require('express');
 
 // local imports
 const { verifyUserIsAdmin } = require('../middlewares/verification');
-const { uploadProduct } = require('../controllers/admin.controller');
+const { uploadProduct, updateProduct } = require('../controllers/admin.controller');
 
 const adminRouter = express.Router();
 
@@ -11,7 +11,7 @@ adminRouter.use(verifyUserIsAdmin);
 adminRouter.post('/product', uploadProduct)
 
 // PUT edit product
-// adminRouter.put();
+adminRouter.put('/update-product', updateProduct);
 
 // // GET view product
 // adminRouter.get();

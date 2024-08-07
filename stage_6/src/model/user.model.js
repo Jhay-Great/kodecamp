@@ -1,14 +1,15 @@
 const { hashPassword } = require('../utils/bcrypt');
-const uuid = require('uuid');
 
 // local imports
+const { generateId } = require('../utils/helpers');
 // Schema
 const { userModel, resetPasswordModel } = require('./userSchema');
+
 
 const userRegistration = async function (data) {
     const {name, email, password, admin = false} = data;
     const registeredUser = {
-        id: uuid.v4(),
+        id: generateId(),
         fullName: name,
         email,
         password: await hashPassword(password),
