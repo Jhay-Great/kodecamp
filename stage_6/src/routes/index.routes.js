@@ -27,6 +27,6 @@ baseRoutes.post("/reset-password", verifyUserPasswordToken ,resetPassword);
 baseRoutes.use("/admin", adminRoutes);
 
 // customer routes
-baseRoutes.use("/customer", customerRoutes);
+baseRoutes.use("/", customerRoutes);
 
 module.exports = baseRoutes;

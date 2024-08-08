@@ -1,10 +1,11 @@
 const mongoose= require('mongoose');
 
-const productSchema = mongoose.Schema({
+
+const ProductSchema = mongoose.Schema({
     id: {
         type: String,
-        require: true,
-    },
+        required: true,
+    },    
     name: {
         type: String,
         required: true,
@@ -15,8 +16,23 @@ const productSchema = mongoose.Schema({
     },
     unitPrice: {
         type: String,
-    }
+    },
 })
+
+const UploadedBySchema = mongoose.Schema({
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    products: [ProductSchema],
+});
+
+const productSchema = mongoose.Schema({
+    uploadedBy: { 
+        type: UploadedBySchema, 
+        required: true
+    }
+});
+
 
 
 const productModel = mongoose.model('product', productSchema);

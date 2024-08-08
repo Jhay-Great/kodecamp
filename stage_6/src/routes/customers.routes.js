@@ -1,11 +1,19 @@
 const express = require('express');
 
 // local imports
-const { register } = require('../controllers/customer.controller');
+const { allProducts, productItem, productCheckout } = require('../controllers/customer.controller');
+
 
 const customerRouter = express.Router();
 
-// customerRouter.post('/register', register);
+// GET all product
+customerRouter.get('/products', allProducts);
+
+// GET single product
+customerRouter.get('/product/:productId', productItem)
+
+// POST checkout products
+customerRouter.post('/purchase-product', productCheckout)
 
 
 module.exports = customerRouter;

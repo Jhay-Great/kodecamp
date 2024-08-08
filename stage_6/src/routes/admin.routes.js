@@ -2,7 +2,7 @@ const express = require('express');
 
 // local imports
 const { verifyUserIsAdmin } = require('../middlewares/verification');
-const { uploadProduct, updateProduct } = require('../controllers/admin.controller');
+const { uploadProduct, updateProduct, viewProduct, deleteProduct } = require('../controllers/admin.controller');
 
 const adminRouter = express.Router();
 
@@ -14,10 +14,10 @@ adminRouter.post('/product', uploadProduct)
 adminRouter.put('/update-product', updateProduct);
 
 // // GET view product
-// adminRouter.get();
+adminRouter.get('/view-product', viewProduct);
 
 // // DELETE product
-// adminRouter.delete();
+adminRouter.delete('/delete-product', deleteProduct);
 
 
 

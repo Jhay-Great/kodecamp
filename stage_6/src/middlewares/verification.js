@@ -32,6 +32,7 @@ const verifyUserIsAdmin = async function (req, res, next) {
     })
 
     req.id = id;
+    // console.log(req.id);
     next();
 
 }
