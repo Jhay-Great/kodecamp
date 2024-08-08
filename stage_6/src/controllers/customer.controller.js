@@ -1,6 +1,6 @@
 
 // local imports
-const { getProductsFromDB, getSingleProductFomDB } = require('../model/product.model')
+const { getProductsFromDB, getSingleProductFomDB, checkoutProducts } = require('../model/product.model')
 
 const allProducts = async function (req, res) {
     try {
@@ -26,7 +26,6 @@ const allProducts = async function (req, res) {
 
 const productItem = async function (req, res) {
     const { productId } = req.params;
-    // console.log(productId); 
     const product = await getSingleProductFomDB(productId);
 
     if (product === null) return res.status(403).json({
@@ -42,7 +41,33 @@ const productItem = async function (req, res) {
 };
 
 
-const productCheckout = async function (req, res) {};
+const productCheckout = async function (req, res) {
+
+    try {
+        const { id } = req;
+        const purchaseData = req.body;
+    
+        const response = await checkoutProducts(purchaseData);
+    
+        console.log(response);
+    
+        return res.status(200).json({
+            success: true,
+            message: `Successfully checked out products`
+        })
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            error: true,
+            message: `Internal server error`,
+        })
+    }
+
+};
 
 
 module.exports = { allProducts, productItem, productCheckout }
+
+
+// register, login, reset their password, view all products, view a single product, checkout with products

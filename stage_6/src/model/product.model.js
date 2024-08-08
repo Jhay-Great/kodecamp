@@ -197,47 +197,88 @@ const getProductsFromDB = async function () {
 }
 
 const getSingleProductFomDB = async function (productId) {
-    // const response = await findOne({'uploadedBy.products.id': id})
-    // const response = await findRequiredData(productModel, {'uploadedBy.id': id})
-
     const response = await productModel.findOne({
         'uploadedBy.products.id': productId
     }, {
         'uploadedBy.products.$': 1
-    });
-
-    // result.uploadedBy.products will contain the matching product
-    // console.log(response);
-    // return response ? response.uploadedBy.products[0] : null;
-
-    // const response = await productModel.findOne({'id': productId});
-    console.log('in model: ', response); 
-    
+    });    
     
     return response;
 }
 
-// async function findProductById(productId) {
-//     const result = await productModel.findOne({
-//         'uploadedBy.products': { $elemMatch: { id: productId } }
-//     });
+// const checkoutProducts = async function (data) {
+//     const { id, checkout } = data;
 
-//     // If a document is found, find the specific product
-//     if (result) {
-//         const product = result.uploadedBy.products.find(p => p.id === productId);
-//         return product || null;
-//     }
-    
-//     return null;
+//     checkout.map(async (item) => {
+//         const response = await productModel.findOne({
+//             'uploadedBy.products.id': item.productId
+//         }, {
+//             'uploadedBy.products.$': 1
+//         }); 
+
+//         // console.log(response.uploadedBy.products);
+//         const stockData = response.uploadedBy.products;
+//         stockData.map(data => {
+//             console.log(data.id)
+//             if (data.id === item.id) {
+//                 console.log(item.id, item.quantity);
+//             }
+//         })
+
+//         const stockQuantity = response.quantity - item.quantity;
+//         // console.log(stockQuantity);
+//     })
+
+
 // }
 
-// // Example usage
-// const productId = 'unique_id';  // Replace with the ID you're looking for
-// findProductById(productId).then(product => {
-//     console.log(product);
-// }).catch(error => {
-//     console.error(error);
-// });
+const checkoutProducts = async function (data) {
+    const { id, checkout } = data;
+
+    // Use Promise.all to handle multiple asynchronous operations concurrently
+    const results = await Promise.all(checkout.map(async (item) => {
+        // Fetch product information from the database based on productId
+        const response = await productModel.findOne(
+            { 'uploadedBy.products.id': item.productId },
+            { 'uploadedBy.products.$': 1 }
+        );
+
+        // Ensure response and products exist
+        if (!response || !response.uploadedBy || !response.uploadedBy.products) {
+            throw new Error(`Product with ID ${item.productId} not found`);
+        }
+
+        // Extract the product data from the response
+        const stockData = response.uploadedBy.products;
+
+        // Find the specific product to update
+        const productToUpdate = stockData.find(product => product.id === item.productId);
+        if (!productToUpdate) {
+            throw new Error(`Product with ID ${item.productId} not found in stock`);
+        }
+
+        // Calculate the new stock quantity
+        const newStockQuantity = productToUpdate.quantity - item.quantity;
+
+        // Log for debugging
+        console.log(`Updating stock for product ID ${item.productId}: Current quantity ${productToUpdate.quantity}, New quantity ${newStockQuantity}`);
+
+        // Update the stock quantity in the database
+        await productModel.updateOne(
+            { 'uploadedBy.products.id': item.productId },
+            { $set: { 'uploadedBy.products.$.quantity': newStockQuantity } }
+        );
+
+        return {
+            productId: item.productId,
+            oldQuantity: productToUpdate.quantity,
+            newQuantity: newStockQuantity
+        };
+    }));
+
+    return results;
+};
+
 
 
 
@@ -250,4 +291,5 @@ module.exports = {
 
     getProductsFromDB,
     getSingleProductFomDB,
+    checkoutProducts
 }

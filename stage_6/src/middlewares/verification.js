@@ -37,9 +37,31 @@ const verifyUserIsAdmin = async function (req, res, next) {
 
 }
 
+const verifyCustomerCredentials = async function (req, res, next) {
+    try {
+        const data = req.headers['authorization'];
+        const token = data && data.split(' ')[1];
+    
+        const { id, admin } = await verifyJwtToken(token);
+        
+        req.id = id;
+        // console.log(req.id);
+        next();
+        
+    } catch (error) {
+        console.log(error);
+        return res.status(403).json({
+            error: true,
+            message: `Sign up/login to be able to make purchases`,
+        })
+    }
+    
+}
+
 
 
 module.exports = {
     verifyUserPasswordToken,
     verifyUserIsAdmin,
+    verifyCustomerCredentials,
 };

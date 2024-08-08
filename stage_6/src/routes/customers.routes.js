@@ -2,6 +2,7 @@ const express = require('express');
 
 // local imports
 const { allProducts, productItem, productCheckout } = require('../controllers/customer.controller');
+const { verifyCustomerCredentials } = require('../middlewares/verification');
 
 
 const customerRouter = express.Router();
@@ -10,13 +11,12 @@ const customerRouter = express.Router();
 customerRouter.get('/products', allProducts);
 
 // GET single product
-customerRouter.get('/product/:productId', productItem)
+customerRouter.get('/product/:productId', productItem);
 
 // POST checkout products
-customerRouter.post('/purchase-product', productCheckout)
+customerRouter.post('/checkout', verifyCustomerCredentials, productCheckout);
 
 
 module.exports = customerRouter;
 
 
-// register, login, reset their password, view all products, view a single product, checkout with products

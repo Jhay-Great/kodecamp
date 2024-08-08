@@ -11,14 +11,16 @@ const verifyUserLogin = async function (req, res, next) {
     if (user === null) return res.status(401).json({
         error: true,
         message: 'User does not exist',
-    }); ;
+    });
+    console.log('email passed...')
     
     const result = await comparePassword(password, user.password)
-
+    
     if (!result)  return res.status(401).json({
         error: true,
         message: 'User does not exist',
     }); ;
+    console.log('password passed...')
     
     req.user = user;
     next();
