@@ -1,5 +1,6 @@
 const productModel = require('./productSchema');
 const { userModel } = require('./userSchema')
+const orderModel = require('./orderSchema');
 const { generateId, formatPrice, findAndUpdateDetails, findRequiredData } = require('../utils/helpers');
 
 // const uploadItem = async function (id, item) {
@@ -113,6 +114,7 @@ const uploadItem = async function (id, item) {
 
 const updateItem = async function (userId, item) {
     const { id: productId, productName, quantity, unitPrice: price } = item;
+    console.log(item)
 
     // Construct the update object
     const updateData = {
@@ -143,7 +145,7 @@ const updateItem = async function (userId, item) {
             throw new Error('Product not found or failed to update');
         }
 
-        console.log('Updated Document:', result);
+        console.log('Updated Document:', result.uploadedBy.products);
         return result.uploadedBy.products;
     } catch (err) {
         console.error('Error updating product:', err);
@@ -209,75 +211,60 @@ const getSingleProductFomDB = async function (productId) {
 // const checkoutProducts = async function (data) {
 //     const { id, checkout } = data;
 
-//     checkout.map(async (item) => {
-//         const response = await productModel.findOne({
-//             'uploadedBy.products.id': item.productId
-//         }, {
-//             'uploadedBy.products.$': 1
-//         }); 
+//     const results = await Promise.all(checkout.map(async (item) => {
+//         // getting product information from the database based on productId
+//         const response = await productModel.findOne(
+//             { 'uploadedBy.products.id': item.productId },
+//             { 'uploadedBy.products.$': 1 }
+//         );
 
-//         // console.log(response.uploadedBy.products);
+//         if (!response || !response.uploadedBy || !response.uploadedBy.products) {
+//             throw new Error(`Product with ID ${item.productId} not found`);
+//         }
+
 //         const stockData = response.uploadedBy.products;
-//         stockData.map(data => {
-//             console.log(data.id)
-//             if (data.id === item.id) {
-//                 console.log(item.id, item.quantity);
-//             }
-//         })
 
-//         const stockQuantity = response.quantity - item.quantity;
-//         // console.log(stockQuantity);
-//     })
+//         const productToUpdate = stockData.find(product => product.id === item.productId);
+//         if (!productToUpdate) {
+//             throw new Error(`Product with ID ${item.productId} not found in stock`);
+//         }
+
+//         const newStockQuantity = productToUpdate.quantity - item.quantity;
+
+//         // console.log(`Updating stock for product ID ${item.productId}: Current quantity ${productToUpdate.quantity}, New quantity ${newStockQuantity}`);
+
+//         await productModel.updateOne(
+//             { 'uploadedBy.products.id': item.productId },
+//             { $set: { 'uploadedBy.products.$.quantity': newStockQuantity } }
+//         );
+
+//         return {
+//             productId: item.productId,
+//             oldQuantity: productToUpdate.quantity,
+//             newQuantity: newStockQuantity
+//         };
+//     }));
+
+//     return results;
+// };
 
 
-// }
+const processOrders = async function (userId, orders) {
+    const user = await userModel.findOne({id: userId});
+    
+    
+    const orderObject = {
+        orderId: generateId(),
+        orders,
+        user: user._id,
+    }
 
-const checkoutProducts = async function (data) {
-    const { id, checkout } = data;
+    const response = await orderModel.create(orderObject);
+    // console.log('in model', response);
+    return response;
 
-    // Use Promise.all to handle multiple asynchronous operations concurrently
-    const results = await Promise.all(checkout.map(async (item) => {
-        // Fetch product information from the database based on productId
-        const response = await productModel.findOne(
-            { 'uploadedBy.products.id': item.productId },
-            { 'uploadedBy.products.$': 1 }
-        );
-
-        // Ensure response and products exist
-        if (!response || !response.uploadedBy || !response.uploadedBy.products) {
-            throw new Error(`Product with ID ${item.productId} not found`);
-        }
-
-        // Extract the product data from the response
-        const stockData = response.uploadedBy.products;
-
-        // Find the specific product to update
-        const productToUpdate = stockData.find(product => product.id === item.productId);
-        if (!productToUpdate) {
-            throw new Error(`Product with ID ${item.productId} not found in stock`);
-        }
-
-        // Calculate the new stock quantity
-        const newStockQuantity = productToUpdate.quantity - item.quantity;
-
-        // Log for debugging
-        console.log(`Updating stock for product ID ${item.productId}: Current quantity ${productToUpdate.quantity}, New quantity ${newStockQuantity}`);
-
-        // Update the stock quantity in the database
-        await productModel.updateOne(
-            { 'uploadedBy.products.id': item.productId },
-            { $set: { 'uploadedBy.products.$.quantity': newStockQuantity } }
-        );
-
-        return {
-            productId: item.productId,
-            oldQuantity: productToUpdate.quantity,
-            newQuantity: newStockQuantity
-        };
-    }));
-
-    return results;
-};
+    
+}
 
 
 
@@ -291,5 +278,6 @@ module.exports = {
 
     getProductsFromDB,
     getSingleProductFomDB,
-    checkoutProducts
+    // checkoutProducts,
+    processOrders
 }

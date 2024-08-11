@@ -34,7 +34,7 @@ const updateProduct = async function (req, res) {
         console.log(error);
         return res.status(500).json({
             error: true,
-            messge: `Internal server error`
+            message: `Internal server error`
         })
     }
 
